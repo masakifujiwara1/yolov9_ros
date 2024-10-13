@@ -10,7 +10,7 @@
   <arg name="image_reliability" default="2"/>
   <arg name="namespace" default="yolo"/>
 
-  <node pkg="yolov9_ros" type="scripts/yolov9_node" name="yolov9_node" ns="$(arg namespace)" output="screen">
+  <node pkg="yolov9_ros" type="yolov9_node.py" name="yolov9_node" ns="$(arg namespace)" output="screen">
     <param name="model" value="$(arg model)"/>
     <param name="device" value="$(arg device)"/>
     <param name="enable" value="$(arg enable)"/>
@@ -19,13 +19,13 @@
     <remap from="image_raw" to="$(arg input_image_topic)"/>
   </node>
 
-  <node pkg="yolov9_ros" type="tracking_node" name="tracking_node" ns="$(arg namespace)" output="screen">
+  <node pkg="yolov9_ros" type="tracking_node.py" name="tracking_node" ns="$(arg namespace)" output="screen">
     <param name="tracker" value="$(arg tracker)"/>
     <param name="image_reliability" value="$(arg image_reliability)"/>
     <remap from="image_raw" to="$(arg input_image_topic)"/>
   </node>
 
-  <node pkg="yolov9_ros" type="debug_node" name="debug_node" ns="$(arg namespace)" output="screen">
+  <node pkg="yolov9_ros" type="debug_node.py" name="debug_node" ns="$(arg namespace)" output="screen">
     <param name="image_reliability" value="$(arg image_reliability)"/>
     <remap from="image_raw" to="$(arg input_image_topic)"/>
     <remap from="detections" to="tracking"/>

@@ -34,7 +34,7 @@ class Yolov9Node:
         self.threshold = rospy.get_param("~threshold", 0.5)
         self.enable = rospy.get_param("~enable", True)
 
-        self.get_logger().info('Yolov9Node created')
+        rospy.loginfo('Yolov9Node created')
 
         self.cv_bridge = CvBridge()
 
