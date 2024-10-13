@@ -10,7 +10,7 @@
   <arg name="image_reliability" default="2"/>
   <arg name="namespace" default="yolo"/>
 
-  <include file="$(find yolov9_bringup)/launch/yolov9.launch">
+  <include file="$(find yolov9_bringup)/launch/yolov8.launch">
     <arg name="model" value="$(arg model)" />
     <arg name="tracker" value="$(arg tracker)" />
     <arg name="device" value="$(arg device)" />
