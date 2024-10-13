@@ -10,15 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package()
 
 catkin_install_python(PROGRAMS
-  # scripts/yolov9_node.py
-  # scripts/debug_node.py
-  # scripts/tracking_node.py
+  scripts/yolov9_node.py
+  scripts/debug_node.py
+  scripts/tracking_node.py
   # scripts/detect_3d_node.py
-  # scripts/bev2graph.py
-  yolov9_node.py
-  debug_node.py
-  tracking_node.py
-  bev2graph.py
+  scripts/bev2graph.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
