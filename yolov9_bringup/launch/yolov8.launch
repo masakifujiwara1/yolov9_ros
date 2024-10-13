@@ -1,0 +1,34 @@
+<launch>
+  <!-- YOLOv8 Launch File for ROS 1 -->
+
+  <arg name="model" default="yolov8m.pt"/>
+  <arg name="tracker" default="bytetrack.yaml"/>
+  <arg name="device" default="cuda:0"/>
+  <arg name="enable" default="True"/>
+  <arg name="threshold" default="0.5"/>
+  <arg name="input_image_topic" default="/camera/rgb/image_raw"/>
+  <arg name="image_reliability" default="2"/>
+  <arg name="namespace" default="yolo"/>
+
+  <node pkg="yolov9_ros" type="yolov8_node" name="yolov9_node" ns="$(arg namespace)" output="screen">
+    <param name="model" value="$(arg model)"/>
+    <param name="device" value="$(arg device)"/>
+    <param name="enable" value="$(arg enable)"/>
+    <param name="threshold" value="$(arg threshold)"/>
+    <param name="image_reliability" value="$(arg image_reliability)"/>
+    <remap from="image_raw" to="$(arg input_image_topic)"/>
+  </node>
+
+  <node pkg="yolov9_ros" type="tracking_node" name="tracking_node" ns="$(arg namespace)" output="screen">
+    <param name="tracker" value="$(arg tracker)"/>
+    <param name="image_reliability" value="$(arg image_reliability)"/>
+    <remap from="image_raw" to="$(arg input_image_topic)"/>
+  </node>
+
+  <node pkg="yolov9_ros" type="debug_node" name="debug_node" ns="$(arg namespace)" output="screen">
+    <param name="image_reliability" value="$(arg image_reliability)"/>
+    <remap from="image_raw" to="$(arg input_image_topic)"/>
+    <remap from="detections" to="tracking"/>
+  </node>
+
+</launch>

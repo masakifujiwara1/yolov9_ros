@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>yolov8_msgs</name>
+  <version>0.0.0</version>
+  <description>Msgs for YOLOv8</description>
+  <maintainer email="fmasaki2020@gmail.com">Masaki Fujiwara</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>message_generation</depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <export>
+    <build_type>catkin</build_type>
+  </export>
+</package>

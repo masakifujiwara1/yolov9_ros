@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>yolov9_ros</name>
+  <version>0.0.0</version>
+  <description>YOLOv9 for ROS 1</description>
+  <maintainer email="fmasaki2020@gmail.com">Masaki Fujiwara</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cv_bridge</depend>
+  <depend>std_srvs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>message_runtime</depend>
+
+  <build_depend>catkin</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>python3</build_depend>
+  
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>python3</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>pytest</test_depend>
+
+  <export>
+    <build_type>catkin</build_type>
+  </export>
+</package>
