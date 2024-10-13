@@ -10,7 +10,7 @@
   <arg name="image_reliability" default="2"/>
   <arg name="namespace" default="yolo"/>
 
-  <node pkg="yolov9_ros" type="yolov8_node" name="yolov9_node" ns="$(arg namespace)" output="screen">
+  <node pkg="yolov9_ros" type="yolov9_node" name="yolov9_node" ns="$(arg namespace)" output="screen">
     <param name="model" value="$(arg model)"/>
     <param name="device" value="$(arg device)"/>
     <param name="enable" value="$(arg enable)"/>
