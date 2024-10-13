@@ -4,7 +4,7 @@
 int32 id
 
 # 2D point in pixels
-yolov8_msgs/Point2D point
+yolov9_msgs/Point2D point
 
 # conf of the keypoint
 float64 score
