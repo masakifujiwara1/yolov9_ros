@@ -11,11 +11,11 @@ from ultralytics.utils.plotting import Annotator, colors
 from sensor_msgs.msg import Image, CompressedImage
 from visualization_msgs.msg import Marker
 from visualization_msgs.msg import MarkerArray
-from yolov8_msgs.msg import BoundingBox2D
-from yolov8_msgs.msg import KeyPoint2D
-from yolov8_msgs.msg import KeyPoint3D
-from yolov8_msgs.msg import Detection
-from yolov8_msgs.msg import DetectionArray
+from yolov9_msgs.msg import BoundingBox2D
+from yolov9_msgs.msg import KeyPoint2D
+from yolov9_msgs.msg import KeyPoint3D
+from yolov9_msgs.msg import Detection
+from yolov9_msgs.msg import DetectionArray
 import message_filters
 
 class DebugNode:
