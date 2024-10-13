@@ -12,6 +12,7 @@
   <depend>std_srvs</depend>
   <depend>sensor_msgs</depend>
   <depend>message_runtime</depend>
+  <depend>yolov9_msgs</depend>
 
   <build_depend>catkin</build_depend>
   <build_depend>rospy</build_depend>
