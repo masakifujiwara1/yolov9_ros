@@ -3,9 +3,9 @@ import rospy
 import math
 from collections import defaultdict, deque
 from sensor_msgs.msg import LaserScan
-from yolov8_msgs.msg import DetectionArray
+from yolov9_msgs.msg import DetectionArray
 from ptp_msgs.msg import PedestrianArray
-from geometry_msgs.msg import PoseArray
+from geometry_msgs.msg import PoseArray, Quaternion
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 
@@ -31,7 +31,7 @@ class Bev2GraphNode:
         self.data_array = None
         self.is_fst_flag = True
         self.curr_frames = deque(maxlen=8)
-        rospy.Timer(rospy.Duration(0.4), self.process_frames)
+        rospy.Timer(rospy.Duration(0.1), self.process_frames)
 
     def callback_yolo(self, data):
         self.dicts.clear()
@@ -98,6 +98,10 @@ class Bev2GraphNode:
         point.pose.position.x = x
         point.pose.position.y = y
         point.pose.position.z = 0.0
+        point.pose.orientation.x = 0
+        point.pose.orientation.y = 0
+        point.pose.orientation.z = 0
+        point.pose.orientation.w = 1
         point.scale.x = point.scale.y = point.scale.z = 1.0
         point.color.r = 0.0
         point.color.g = 1.0
