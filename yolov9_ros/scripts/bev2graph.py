@@ -31,7 +31,7 @@ class Bev2GraphNode:
         self.data_array = None
         self.is_fst_flag = True
         self.curr_frames = deque(maxlen=8)
-        rospy.Timer(rospy.Duration(0.1), self.process_frames)
+        rospy.Timer(rospy.Duration(0.4), self.process_frames)
 
     def callback_yolo(self, data):
         self.dicts.clear()
@@ -107,7 +107,7 @@ class Bev2GraphNode:
         point.color.g = 1.0
         point.color.b = 0.0
         point.color.a = 1.0
-        point.lifetime = rospy.Duration(0.1)
+        point.lifetime = rospy.Duration(0.4)
         self.marker_array.markers.append(point)
     
     def publish_marker_array(self):
