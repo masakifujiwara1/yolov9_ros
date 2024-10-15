@@ -102,7 +102,7 @@ class Bev2GraphNode:
         point.pose.orientation.y = 0
         point.pose.orientation.z = 0
         point.pose.orientation.w = 1
-        point.scale.x = point.scale.y = point.scale.z = 1.0
+        point.scale.x = point.scale.y = point.scale.z = 0.5
         point.color.r = 0.0
         point.color.g = 1.0
         point.color.b = 0.0
