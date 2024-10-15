@@ -37,9 +37,9 @@ class DebugNode:
             "dbg_kp_markers", MarkerArray, queue_size=10)
 
         self.image_sub = message_filters.Subscriber(
-            "/image_raw", CompressedImage)
+            "image_raw", CompressedImage)
         self.detections_sub = message_filters.Subscriber(
-            "/detections", DetectionArray)
+            "detections", DetectionArray)
 
         self._synchronizer = message_filters.ApproximateTimeSynchronizer(
             [self.image_sub, self.detections_sub], 10, 0.5)
