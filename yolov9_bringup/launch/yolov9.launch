@@ -6,7 +6,7 @@
   <arg name="device" default="cuda:0"/>
   <arg name="enable" default="True"/>
   <arg name="threshold" default="0.5"/>
-  <arg name="input_image_topic" default="/camera/image_raw/compressed"/>
+  <arg name="input_image_topic" default="/rfans_camera/image_raw/compressed"/>
   <arg name="image_reliability" default="2"/>
   <arg name="namespace" default="yolo"/>
 

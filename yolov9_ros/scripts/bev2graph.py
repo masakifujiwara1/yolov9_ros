@@ -8,12 +8,13 @@ from ptp_msgs.msg import PedestrianArray
 from geometry_msgs.msg import PoseArray, Quaternion
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
+from tf_pose import *
 
 class Bev2GraphNode:
     def __init__(self):
         rospy.init_node('bev2graph_node', anonymous=True)
         self.scan_sub = rospy.Subscriber(
-            '/scan',
+            '/rfans_scan',
             LaserScan,
             self.callback)
         self.detections_sub = rospy.Subscriber(
@@ -25,6 +26,7 @@ class Bev2GraphNode:
         self.dicts = defaultdict(lambda: {'id': 0, 'score': 0, 'theta': 0, 'x': 0, 'y': 0, 'size_x': 0, 'size_y': 0})
         self.scan = LaserScan()
         self.marker_array = MarkerArray()
+        self.detection_array = DetectionArray()
 
         # process frame
         self.frame = 0
@@ -32,11 +34,26 @@ class Bev2GraphNode:
         self.is_fst_flag = True
         self.curr_frames = deque(maxlen=8)
         rospy.Timer(rospy.Duration(0.4), self.process_frames)
+        rospy.Timer(rospy.Duration(0.1), self.calc_pose)
+        
+        init_tf()
 
     def callback_yolo(self, data):
-        self.dicts.clear()
+        # self.dicts.clear()
         self.marker_array = MarkerArray()
-        for idx, i in enumerate(data.detections):
+        self.detection_array.detections = data.detections
+        # for idx, i in enumerate(data.detections):
+        #     if i.class_id == 0:
+        #         self.dicts[idx]['id'] = i.id
+        #         self.dicts[idx]['score'] = i.score
+        #         self.dicts[idx]['theta'] = i.bbox.center.theta
+        #         self.dicts[idx]['size_x'] = i.bbox.size.x
+        #         self.dicts[idx]['size_y'] = i.bbox.size.y
+
+    def calc_pose(self, event):
+        self.dicts.clear()
+
+        for idx, i in enumerate(self.detection_array.detections):
             if i.class_id == 0:
                 self.dicts[idx]['id'] = i.id
                 self.dicts[idx]['score'] = i.score
@@ -44,7 +61,6 @@ class Bev2GraphNode:
                 self.dicts[idx]['size_x'] = i.bbox.size.x
                 self.dicts[idx]['size_y'] = i.bbox.size.y
 
-    def calc_pose(self):
         for key, value in self.dicts.items():
             angle = value['theta']
             id_ = value['id']
@@ -60,12 +76,24 @@ class Bev2GraphNode:
 
             if 0 <= index < len(self.scan.ranges):
                 min_dist = float('inf')
-                for offset in range(-7, 7):
-                    distance = self.scan.ranges[index + offset]
-                    min_dist = min(distance, min_dist)
+
+                if angle > 0.2:
+                    for offset in range(-5, 15):
+                        distance = self.scan.ranges[index + offset]
+                        min_dist = min(distance, min_dist)
+                elif angle < -0.2:
+                    for offset in range(-15, 5):
+                        distance = self.scan.ranges[index + offset]
+                        min_dist = min(distance, min_dist)
+                else:
+                    for offset in range(-10, 10):
+                        distance = self.scan.ranges[index + offset]
+                        min_dist = min(distance, min_dist)
                 
                 distance = min_dist
                 x, y = self.calc_xy(angle, distance)
+
+                x, y, _ = transform_pose(x, y, 0.0)
 
                 self.dicts[key]['x'] = x
                 self.dicts[key]['y'] = y
@@ -90,7 +118,7 @@ class Bev2GraphNode:
 
     def add_marker(self, id_, x, y):
         point = Marker()
-        point.header.frame_id = 'base_scan'
+        point.header.frame_id = 'map'
         point.ns = "point"
         point.id = int(id_)
         point.type = Marker.SPHERE
@@ -115,8 +143,9 @@ class Bev2GraphNode:
 
     def process_frames(self, event):
         self.curr_frames.append(self.frame)
-        self.calc_pose()
+        # self.calc_pose()
         for key, value in self.dicts.items():
+            
             data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
 
             if self.is_fst_flag:
@@ -126,7 +155,10 @@ class Bev2GraphNode:
                 self.data_array = np.vstack((self.data_array, data))
 
         if len(self.curr_frames) == 8:
-            self.data_array = self.data_array[self.data_array[:, 0].astype(int) >= self.curr_frames[0]]
+            try:
+                self.data_array = self.data_array[self.data_array[:, 0].astype(int) >= self.curr_frames[0]]
+            except:
+                return
 
             msg = PedestrianArray()
             msg.data = self.data_array.flatten().tolist()

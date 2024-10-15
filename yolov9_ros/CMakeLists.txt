@@ -15,6 +15,7 @@ catkin_install_python(PROGRAMS
   scripts/tracking_node.py
   # scripts/detect_3d_node.py
   scripts/bev2graph.py
+  scripts/tf_pose.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
