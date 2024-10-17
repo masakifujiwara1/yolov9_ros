@@ -54,7 +54,7 @@ class TrackingNode:
         return tracker
 
     def calc_theta(self, w_img_, x_center_):
-        fov_horizonal = math.pi / 2  # 90deg
+        fov_horizonal = math.pi * 2  # 90deg
         theta_ = -((x_center_ - (w_img_ / 2)) * fov_horizonal) / w_img_
         theta_ = math.atan2(math.sin(theta_), math.cos(theta_))
         return theta_
