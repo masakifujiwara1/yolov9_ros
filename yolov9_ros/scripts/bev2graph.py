@@ -5,7 +5,8 @@ from collections import defaultdict, deque
 from sensor_msgs.msg import LaserScan
 from yolov9_msgs.msg import DetectionArray
 from ptp_msgs.msg import PedestrianArray
-from geometry_msgs.msg import PoseArray, Quaternion
+from geometry_msgs.msg import PoseArray, Quaternion, Point
+from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
 from tf_pose import *
@@ -23,7 +24,7 @@ class Bev2GraphNode:
             self.callback_yolo)
         self.marker_array_pub = rospy.Publisher('detect_human', MarkerArray, queue_size=10)
         self.pedestrian_array_pub = rospy.Publisher('ped_seq', PedestrianArray, queue_size=10)
-        self.dicts = defaultdict(lambda: {'id': 0, 'score': 0, 'theta': 0, 'x': 0, 'y': 0, 'size_x': 0, 'size_y': 0})
+        self.dicts = defaultdict(lambda: {'id': 0, 'score': 0, 'theta': 0, 'x': 0, 'y': 0, 'size_x': 0, 'size_y': 0, 'distance': 0})
         self.scan = LaserScan()
         self.marker_array = MarkerArray()
         self.detection_array = DetectionArray()
@@ -35,6 +36,26 @@ class Bev2GraphNode:
         self.curr_frames = deque(maxlen=8)
         rospy.Timer(rospy.Duration(0.4), self.process_frames)
         rospy.Timer(rospy.Duration(0.1), self.calc_pose)
+
+        # viz setting
+        self.color_palette = [
+        [255, 0, 0],      # 赤
+        [0, 255, 0],      # 緑
+        [0, 0, 255],      # 青
+        [255, 255, 0],    # 黄
+        [255, 0, 255],    # マゼンタ
+        [0, 255, 255],    # シアン
+        [128, 0, 0],      # 暗赤
+        [0, 128, 0],      # 暗緑
+        [0, 0, 128],      # 暗青
+        [128, 128, 0],    # オリーブ
+        [128, 0, 128],    # 紫
+        [0, 128, 128],    # ティール
+        [192, 192, 192],  # 銀
+        [128, 128, 128],  # グレー
+        [255, 165, 0],    # オレンジ
+        [75, 0, 130]      # インディゴ
+        ]
         
         init_tf()
 
@@ -77,18 +98,18 @@ class Bev2GraphNode:
             if 0 <= index < len(self.scan.ranges):
                 min_dist = float('inf')
 
-                if angle > 0.2:
-                    for offset in range(-5, 15):
-                        distance = self.scan.ranges[index + offset]
-                        min_dist = min(distance, min_dist)
-                elif angle < -0.2:
-                    for offset in range(-15, 5):
-                        distance = self.scan.ranges[index + offset]
-                        min_dist = min(distance, min_dist)
-                else:
-                    for offset in range(-10, 10):
-                        distance = self.scan.ranges[index + offset]
-                        min_dist = min(distance, min_dist)
+                # if angle > 0.2:
+                #     for offset in range(-5, 15):
+                #         distance = self.scan.ranges[index + offset]
+                #         min_dist = min(distance, min_dist)
+                # elif angle < -0.2:
+                #     for offset in range(-15, 5):
+                #         distance = self.scan.ranges[index + offset]
+                #         min_dist = min(distance, min_dist)
+                # else:
+                for offset in range(-10, 10):
+                    distance = self.scan.ranges[index + offset]
+                    min_dist = min(distance, min_dist)
                 
                 distance = min_dist
                 x, y = self.calc_xy(angle, distance)
@@ -97,12 +118,14 @@ class Bev2GraphNode:
 
                 self.dicts[key]['x'] = x
                 self.dicts[key]['y'] = y
+                self.dicts[key]['distance'] = distance
 
-                if distance != float('inf'):
-                    self.add_marker(id_, x, y)
+                # if distance != float('inf'):
+                #     self.add_marker(id_, x, y)
             else:
                 rospy.logwarn('計算されたインデックスが範囲外です')
 
+        self.add_tracking_marker()
         self.publish_marker_array()
 
     def callback(self, scan):
@@ -116,7 +139,7 @@ class Bev2GraphNode:
     def is_valid_index(self, i, length):
         return 0 <= i < length
 
-    def add_marker(self, id_, x, y):
+    def add_marker(self, id_, x_, y_):
         point = Marker()
         point.header.frame_id = 'map'
         point.ns = "point"
@@ -137,6 +160,58 @@ class Bev2GraphNode:
         point.color.a = 1.0
         point.lifetime = rospy.Duration(0.4)
         self.marker_array.markers.append(point)
+    
+    def add_tracking_marker(self):
+        boxes = Marker()
+        boxes.header.frame_id = 'map'
+        boxes.action = Marker.ADD
+        boxes.lifetime = rospy.Duration(1.0)
+        boxes.ns = "boxes"
+        boxes.type = Marker.CUBE_LIST
+        boxes.scale.x = 0.5
+        boxes.scale.y = 0.5
+        boxes.scale.z = 1.2
+        # boxes.pose.position.x = x_
+        # boxes.pose.position.y = y_
+        boxes.pose.position.z = 0.0
+        boxes.pose.orientation.w = 1.0
+
+        for key, value in self.dicts.items():
+            color = self.color_palette[int(value['id']) % len(self.color_palette)]
+
+            if value['distance'] == float('inf'):
+                continue
+
+            rgba = ColorRGBA()
+            rgba.r = color[2] / 255.0
+            rgba.g = color[1] / 255.0
+            rgba.b = color[0] / 255.0
+            rgba.a = 0.6
+            boxes.colors.append(rgba)
+
+            point = Point()
+            point.x = float(value['x'])
+            point.y = float(value['y'])
+            point.z = 0.0
+            boxes.points.append(point)
+
+            text = Marker()
+            text.header = boxes.header
+            text.action = Marker.ADD
+            text.lifetime = rospy.Duration(1.0)
+            text.ns = f"text{value['id']}"
+            text.type = Marker.TEXT_VIEW_FACING
+            text.scale.z = 0.5
+            text.pose.position = point
+            text.pose.position.z += 0.7
+            text.color.r = 1.0
+            text.color.g = 1.0
+            text.color.b = 1.0
+            text.color.a = 1.0
+            text.text = f"id:{value['id']}"
+            
+            self.marker_array.markers.append(text)
+        self.marker_array.markers.append(boxes)
     
     def publish_marker_array(self):
         self.marker_array_pub.publish(self.marker_array)
