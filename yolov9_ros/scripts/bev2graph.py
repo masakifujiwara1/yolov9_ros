@@ -15,7 +15,7 @@ class Bev2GraphNode:
     def __init__(self):
         rospy.init_node('bev2graph_node', anonymous=True)
         self.scan_sub = rospy.Subscriber(
-            '/rfans_scan',
+            '/rfans/surestar_scan',
             LaserScan,
             self.callback)
         self.detections_sub = rospy.Subscriber(
@@ -163,7 +163,7 @@ class Bev2GraphNode:
     
     def add_tracking_marker(self):
         boxes = Marker()
-        boxes.header.frame_id = 'map'
+        boxes.header.frame_id = 'odom'
         boxes.action = Marker.ADD
         boxes.lifetime = rospy.Duration(1.0)
         boxes.ns = "boxes"
@@ -219,20 +219,24 @@ class Bev2GraphNode:
     def process_frames(self, event):
         self.curr_frames.append(self.frame)
         # self.calc_pose()
-        for key, value in self.dicts.items():
-            
-            data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
+        try:
+            for key, value in self.dicts.items():
+                
+                data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
 
-            if self.is_fst_flag:
-                self.data_array = data
-                self.is_fst_flag = False
-            else:
-                self.data_array = np.vstack((self.data_array, data))
+                if self.is_fst_flag:
+                    self.data_array = data
+                    self.is_fst_flag = False
+                else:
+                    self.data_array = np.vstack((self.data_array, data))
+        except:
+            pass
 
         if len(self.curr_frames) == 8:
             try:
                 self.data_array = self.data_array[self.data_array[:, 0].astype(int) >= self.curr_frames[0]]
             except:
+                rospy.loginfo("error")
                 return
 
             msg = PedestrianArray()

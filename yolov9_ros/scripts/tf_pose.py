@@ -27,7 +27,7 @@ def transform_pose(x_, y_, z_):
     pose_stamped.pose.orientation.w = 1.0
 
     try:
-        transform = tf_buffer.lookup_transform("map", "base_link", rospy.Time(0), rospy.Duration(1.0))
+        transform = tf_buffer.lookup_transform("odom", "base_link", rospy.Time(0), rospy.Duration(1.0))
         transformed_pose = tf2_geometry_msgs.do_transform_pose(pose_stamped, transform)
         return transformed_pose.pose.position.x, transformed_pose.pose.position.y, transformed_pose.pose.position.z
 
