@@ -182,6 +182,9 @@ class Bev2GraphNode:
             if value['distance'] == float('inf'):
                 continue
 
+            if abs(self.dicts[key]['theta']) >= 2.62:
+                continue
+
             rgba = ColorRGBA()
             rgba.r = color[2] / 255.0
             rgba.g = color[1] / 255.0
@@ -221,6 +224,9 @@ class Bev2GraphNode:
         # self.calc_pose()
         try:
             for key, value in self.dicts.items():
+
+                if abs(self.dicts[key]['theta']) >= 2.62:
+                    continue
                 
                 data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
 
@@ -230,7 +236,7 @@ class Bev2GraphNode:
                 else:
                     self.data_array = np.vstack((self.data_array, data))
         except:
-            pass
+            rospy.loginfo("error")
 
         if len(self.curr_frames) == 8:
             try:
