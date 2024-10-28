@@ -24,6 +24,7 @@ class Bev2GraphNode:
             self.callback_yolo)
         self.marker_array_pub = rospy.Publisher('detect_human', MarkerArray, queue_size=10)
         self.pedestrian_array_pub = rospy.Publisher('ped_seq', PedestrianArray, queue_size=10)
+        self.curr_ped_array_pub = rospy.Publisher('curr_ped', PedestrianArray, queue_size=10)
         self.dicts = defaultdict(lambda: {'id': 0, 'score': 0, 'theta': 0, 'x': 0, 'y': 0, 'size_x': 0, 'size_y': 0, 'distance': 0})
         self.scan = LaserScan()
         self.marker_array = MarkerArray()
@@ -235,6 +236,16 @@ class Bev2GraphNode:
                     self.is_fst_flag = False
                 else:
                     self.data_array = np.vstack((self.data_array, data))
+
+            curr_data_array = self.data_array[self.data_array[:, 0].astype(int) == self.frame]
+
+            curr_msg = PedestrianArray()
+            curr_msg.data = curr_data_array.flatten().tolist()
+            curr_msg.shape = curr_data_array.shape
+            curr_msg.dtype = str(curr_data_array.dtype)
+
+            self.curr_ped_array_pub.publish(curr_msg)
+                
         except:
             rospy.loginfo("error")
 
