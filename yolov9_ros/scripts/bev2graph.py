@@ -107,7 +107,7 @@ class Bev2GraphNode:
                 #         distance = self.scan.ranges[index + offset]
                 #         min_dist = min(distance, min_dist)
                 # else:
-                for offset in range(-10, 10):
+                for offset in range(-15, 15):
                     distance = self.scan.ranges[index + offset]
                     min_dist = min(distance, min_dist)
                 
@@ -182,7 +182,7 @@ class Bev2GraphNode:
             if value['distance'] == float('inf'):
                 continue
 
-            if abs(self.dicts[key]['theta']) >= 2.62:
+            if abs(self.dicts[key]['theta']) >= 2.30:
                 continue
 
             rgba = ColorRGBA()
@@ -225,7 +225,7 @@ class Bev2GraphNode:
         try:
             for key, value in self.dicts.items():
 
-                if abs(self.dicts[key]['theta']) >= 2.62:
+                if abs(self.dicts[key]['theta']) >= 2.30:
                     continue
                 
                 data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
