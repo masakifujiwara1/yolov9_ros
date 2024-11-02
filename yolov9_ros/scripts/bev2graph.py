@@ -30,6 +30,11 @@ class Bev2GraphNode:
         self.marker_array = MarkerArray()
         self.detection_array = DetectionArray()
 
+        if not rospy.has_param('~is_robot_in_data'):
+            rospy.set_param('~is_robot_in_data', False)
+        self.is_robot_in_data = rospy.get_param('~is_robot_in_data')
+        # print(self.is_robot_in_data)
+
         # process frame
         self.frame = 0
         self.data_array = None
