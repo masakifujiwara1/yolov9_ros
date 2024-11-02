@@ -234,9 +234,11 @@ class Bev2GraphNode:
             for key, value in self.dicts.items():
 
                 if abs(self.dicts[key]['theta']) >= 2.30:
+                    # rospy.loginfo(f'Exclude data!')
                     continue
 
                 if self.dicts[key]['x'] == float('inf') or self.dicts[key]['y'] == float('inf'):
+                    rospy.loginfo(f'Exclude data with calc err!')
                     continue
 
                 data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
