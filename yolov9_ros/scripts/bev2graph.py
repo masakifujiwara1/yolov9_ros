@@ -6,6 +6,7 @@ from sensor_msgs.msg import LaserScan
 from yolov9_msgs.msg import DetectionArray
 from ptp_msgs.msg import PedestrianArray
 from geometry_msgs.msg import PoseArray, Quaternion, Point
+from nav_msgs.msg import Odometry
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
 import numpy as np
@@ -22,6 +23,10 @@ class Bev2GraphNode:
             '/yolo/tracking',
             DetectionArray,
             self.callback_yolo)
+        self.robot_sub = rospy.Subscriber(
+            '/odom',
+            Odometry,
+            self.callback_robot)
         self.marker_array_pub = rospy.Publisher('detect_human', MarkerArray, queue_size=10)
         self.pedestrian_array_pub = rospy.Publisher('ped_seq', PedestrianArray, queue_size=10)
         self.curr_ped_array_pub = rospy.Publisher('curr_ped', PedestrianArray, queue_size=10)
@@ -34,6 +39,7 @@ class Bev2GraphNode:
             rospy.set_param('~is_robot_in_data', False)
         self.is_robot_in_data = rospy.get_param('~is_robot_in_data')
         # print(self.is_robot_in_data)
+        self.robot_pos = Point()
 
         # process frame
         self.frame = 0
@@ -137,6 +143,9 @@ class Bev2GraphNode:
     def callback(self, scan):
         self.scan = scan
 
+    def callback_robot(self, msg):
+        self.robot_pos = msg.pose.pose.position
+
     def calc_xy(self, angle, distance):
         x = distance * math.cos(angle)
         y = distance * math.sin(angle)
@@ -225,22 +234,28 @@ class Bev2GraphNode:
     def publish_marker_array(self):
         self.marker_array_pub.publish(self.marker_array)
 
+    def switch_flag_data_array(self, data):
+        if self.is_fst_flag:
+            self.data_array = data
+            self.is_fst_flag = False
+        else:
+            self.data_array = np.vstack((self.data_array, data))
+
     def process_frames(self, event):
         self.curr_frames.append(self.frame)
         # self.calc_pose()
         try:
+            if self.is_robot_in_data:
+                data = np.array([self.frame, 0.0, self.robot_pos.x, self.robot_pos.y])
+                self.switch_flag_data_array(data)
+
             for key, value in self.dicts.items():
 
                 if abs(self.dicts[key]['theta']) >= 2.30:
                     continue
                 
                 data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
-
-                if self.is_fst_flag:
-                    self.data_array = data
-                    self.is_fst_flag = False
-                else:
-                    self.data_array = np.vstack((self.data_array, data))
+                self.switch_flag_data_array(data)
 
             curr_data_array = self.data_array[self.data_array[:, 0].astype(int) == self.frame]
 
