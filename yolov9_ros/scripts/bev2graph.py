@@ -115,7 +115,14 @@ class Bev2GraphNode:
                 distance = min_dist
                 x, y = self.calc_xy(angle, distance)
 
-                x, y, _ = transform_pose(x, y, 0.0)
+                # print(f'base_link_x: {x}, base_link_y: {y}')
+
+                if x == 0.0 or y == 0.0:
+                    x = float('inf')
+                    y = float('inf')
+                    rospy.logwarn(f'Detect position calculation errors')
+                else:
+                    x, y, _ = transform_pose(x, y, 0.0)
 
                 self.dicts[key]['x'] = x
                 self.dicts[key]['y'] = y
@@ -228,7 +235,10 @@ class Bev2GraphNode:
 
                 if abs(self.dicts[key]['theta']) >= 2.30:
                     continue
-                
+
+                if self.dicts[key]['x'] == float('inf') or self.dicts[key]['y'] == float('inf'):
+                    continue
+
                 data = np.array([self.frame, self.dicts[key]['id'], self.dicts[key]['x'], self.dicts[key]['y']], dtype=np.float32)
 
                 if self.is_fst_flag:
