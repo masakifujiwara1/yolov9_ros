@@ -23,10 +23,10 @@ class Bev2GraphNode:
             '/yolo/tracking',
             DetectionArray,
             self.callback_yolo)
-        self.robot_sub = rospy.Subscriber(
-            '/odom',
-            Odometry,
-            self.callback_robot)
+        # self.robot_sub = rospy.Subscriber(
+        #     '/odom',
+        #     Odometry,
+        #     self.callback_robot)
         self.marker_array_pub = rospy.Publisher('detect_human', MarkerArray, queue_size=10)
         self.pedestrian_array_pub = rospy.Publisher('ped_seq', PedestrianArray, queue_size=10)
         self.curr_ped_array_pub = rospy.Publisher('curr_ped', PedestrianArray, queue_size=10)
@@ -35,11 +35,12 @@ class Bev2GraphNode:
         self.marker_array = MarkerArray()
         self.detection_array = DetectionArray()
 
-        if not rospy.has_param('~is_robot_in_data'):
-            rospy.set_param('~is_robot_in_data', False)
-        self.is_robot_in_data = rospy.get_param('~is_robot_in_data')
+        # if not rospy.has_param('~is_robot_in_data'):
+        #     rospy.set_param('~is_robot_in_data', False)
+        # self.is_robot_in_data = rospy.get_param('~is_robot_in_data')
+        self.is_robot_in_data = True
         # print(self.is_robot_in_data)
-        self.robot_pos = Point()
+        # self.robot_pos = Point()
 
         # process frame
         self.frame = 0
@@ -146,8 +147,8 @@ class Bev2GraphNode:
     def callback(self, scan):
         self.scan = scan
 
-    def callback_robot(self, msg):
-        self.robot_pos = msg.pose.pose.position
+    # def callback_robot(self, msg):
+    #     self.robot_pos = msg.pose.pose.position
 
     def calc_xy(self, angle, distance):
         x = distance * math.cos(angle)
@@ -249,7 +250,8 @@ class Bev2GraphNode:
         # self.calc_pose()
         try:
             if self.is_robot_in_data:
-                data = np.array([self.frame, 0.0, self.robot_pos.x, self.robot_pos.y])
+                robot_x, robot_y, _ = transform_pose(0.0, 0.0, 0.0)
+                data = np.array([self.frame, 0.0, robot_x, robot_y])
                 self.switch_flag_data_array(data)
 
             for key, value in self.dicts.items():
@@ -294,7 +296,12 @@ class Bev2GraphNode:
 
 def main():
     bev2graph_node = Bev2GraphNode()
-    rospy.spin()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        rospy.loginfo("Ctrl+C detected. Shutting down")
+    finally:
+        rospy.signal_shutdown("Node shutdown complete")
 
 if __name__ == '__main__':
     main()
