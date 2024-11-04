@@ -121,13 +121,17 @@ class Bev2GraphNode:
                 #         min_dist = min(distance, min_dist)
                 # else:
                 for offset in range(-15, 15):
-                    distance = self.scan.ranges[index + offset]
+                    try:
+                        distance = self.scan.ranges[index + offset]
+                    except:
+                        continue
+
                     min_dist = min(distance, min_dist)
                 
                 distance = min_dist
                 x, y = self.calc_xy(angle, distance)
 
-                if x == 0.0 or y == 0.0:
+                if x == 0.0 or y == 0.0 or distance==float('inf'):
                     rospy.logwarn(f'Detect position calculation errors')
                 else:
                     x, y, _ = transform_pose(x, y, 0.0)
