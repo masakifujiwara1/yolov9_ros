@@ -114,7 +114,10 @@ class Bev2GraphNode:
                 distance = min_dist
                 x, y = self.calc_xy(angle, distance)
 
-                x, y, _ = transform_pose(x, y, 0.0)
+                try:
+                    x, y, _ = transform_pose(x, y, 0.0)
+                except:
+                    continue
 
                 self.dicts[key]['x'] = x
                 self.dicts[key]['y'] = y
